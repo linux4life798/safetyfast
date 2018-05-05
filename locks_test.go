@@ -2,6 +2,7 @@ package safetyfast
 
 import (
 	"math/rand"
+	"runtime"
 	"testing"
 	"time"
 )
@@ -98,6 +99,8 @@ func TestHLESpinLock(t *testing.T) {
 	t.Run("Waiting", func(t *testing.T) {
 		var released bool
 
+		oldmaxprocs := runtime.GOMAXPROCS(2)
+
 		x = 1
 		go func() {
 			randsrc := rand.NewSource(int64(time.Now().Second()))
@@ -120,5 +123,7 @@ func TestHLESpinLock(t *testing.T) {
 		if x != 0 {
 			t.Errorf("HLEUnlock set x to %v instead of 0", x)
 		}
+
+		runtime.GOMAXPROCS(oldmaxprocs)
 	})
 }
