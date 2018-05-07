@@ -35,15 +35,15 @@ var syncprimatives = map[string]testlock{
 		m:    new(safetyfast.SpinHLEMutex),
 	},
 	"spinrtm": {
-		name: "SpinRTM",
+		name: "SpinRTMWithPause",
 		m:    new(sync.Mutex),
 	},
 	"spinrtm2": {
-		name: "SpinRTM2",
+		name: "SpinRTMNoPause",
 		m:    new(sync.Mutex),
 	},
 	"spinrtm3": {
-		name: "SpinRTM3",
+		name: "SpinRTMWithLibrary",
 		m:    new(sync.Mutex),
 	},
 }
@@ -104,7 +104,7 @@ func GoRoutine(wg *sync.WaitGroup, values *RandValues, btc *BinTouchCounter, m s
 	wg.Done()
 }
 
-func GoRoutineRTM(wg *sync.WaitGroup, values *RandValues, btc *BinTouchCounter, m *safetyfast.SpinMutex) {
+func GoRoutineRTMWithPause(wg *sync.WaitGroup, values *RandValues, btc *BinTouchCounter, m *safetyfast.SpinMutex) {
 	vals := values.GetAll()
 	for _, v := range vals {
 		index := int(v.(int32))
@@ -131,7 +131,7 @@ func GoRoutineRTM(wg *sync.WaitGroup, values *RandValues, btc *BinTouchCounter, 
 	wg.Done()
 }
 
-func GoRoutineRTM2(wg *sync.WaitGroup, values *RandValues, btc *BinTouchCounter, m sync.Locker, fallback *bool) {
+func GoRoutineRTMNoPause(wg *sync.WaitGroup, values *RandValues, btc *BinTouchCounter, m sync.Locker, fallback *bool) {
 	vals := values.GetAll()
 	for _, v := range vals {
 		index := int(v.(int32))
@@ -156,7 +156,7 @@ func GoRoutineRTM2(wg *sync.WaitGroup, values *RandValues, btc *BinTouchCounter,
 	wg.Done()
 }
 
-func GoRoutineRTM3(wg *sync.WaitGroup, values *RandValues, btc *BinTouchCounter, r *safetyfast.RTMContext) {
+func GoRoutineRTMWithLibrary(wg *sync.WaitGroup, values *RandValues, btc *BinTouchCounter, r *safetyfast.RTMContext) {
 	vals := values.GetAll()
 	for _, v := range vals {
 		index := int(v.(int32))
@@ -201,7 +201,6 @@ func main() {
 	}
 
 	for i := range values {
-		// values[i].Clear().AddUniformInt32(numOpsPerGoRoutine, int32(numBins))
 		values[i].Clear().AddSparseInt32(numOpsPerGoRoutine)
 	}
 
@@ -228,8 +227,8 @@ func main() {
 	plot := NewPerfPlot()
 
 	for _, l := range testlocks {
-		var avgCount int64 = 0
-		var avgMs float64 = 0.0
+		var avgCount int64
+		var avgMs float64
 		m := l.m
 
 		btc := NewBinTouchCounter(int(FlagNumBinEnd * 2))
@@ -242,21 +241,18 @@ func main() {
 
 			wg.Add(numGoRoutines)
 			start := time.Now()
-			if l.name == "SpinRTM" {
+			if l.name == "SpinRTMWithPause" {
 				var m safetyfast.SpinMutex
 				for gid := 0; gid < numGoRoutines; gid++ {
-					go GoRoutineRTM(&wg, values[gid], btc, &m)
-					// go GoRoutineRTM2(&wg, values[gid], btc, m.(*sync.Mutex), &rtmfallback)
+					go GoRoutineRTMWithPause(&wg, values[gid], btc, &m)
 				}
-			} else if l.name == "SpinRTM2" {
+			} else if l.name == "SpinRTMNoPause" {
 				for gid := 0; gid < numGoRoutines; gid++ {
-					// go GoRoutineRTM(&wg, values[gid], btc, m.(*safetyfast.SpinMutex))
-					go GoRoutineRTM2(&wg, values[gid], btc, m.(*sync.Mutex), &rtmfallback)
+					go GoRoutineRTMNoPause(&wg, values[gid], btc, m.(*sync.Mutex), &rtmfallback)
 				}
-			} else if l.name == "SpinRTM3" {
+			} else if l.name == "SpinRTMWithLibrary" {
 				for gid := 0; gid < numGoRoutines; gid++ {
-					// go GoRoutineRTM(&wg, values[gid], btc, m.(*safetyfast.SpinMutex))
-					go GoRoutineRTM3(&wg, values[gid], btc, r)
+					go GoRoutineRTMWithLibrary(&wg, values[gid], btc, r)
 				}
 			} else {
 				for gid := 0; gid < numGoRoutines; gid++ {
