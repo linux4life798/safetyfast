@@ -52,7 +52,7 @@ retry:
 		r.lock.Lock()
 		atomic.SwapInt32(&r.fallback, 1)
 		commiter()
-		atomic.SwapInt32(&r.fallback, 0)
+		r.fallback = 0
 		r.lock.Unlock()
 		// r.fallback = 0
 	}
