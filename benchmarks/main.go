@@ -161,7 +161,7 @@ func GoRoutineRTMWithLibrary(wg *sync.WaitGroup, values *RandValues, btc *BinTou
 	for _, v := range vals {
 		index := int(v.(int32))
 
-		r.Commit(func() {
+		r.Atomic(func() {
 			btc.Touch(index)
 		})
 
