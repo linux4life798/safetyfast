@@ -13,3 +13,11 @@ func (m *SystemMutex) Lock() {
 func (m *SystemMutex) Unlock() {
 	m.m.Unlock()
 }
+
+type NoMutex struct{}
+
+func (m *NoMutex) Lock() {
+}
+
+func (m *NoMutex) Unlock() {
+}
