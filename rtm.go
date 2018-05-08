@@ -32,7 +32,7 @@ func (r *RTMContext) CapacityAborts() uint64 {
 	return r.capacityaborts
 }
 
-func (r *RTMContext) Commit(commiter func()) {
+func (r *RTMContext) Atomic(commiter func()) {
 retry:
 	if status := rtm.TxBegin(); status == rtm.TxBeginStarted {
 		if r.fallback != 0 {
@@ -41,13 +41,18 @@ retry:
 		commiter()
 		rtm.TxEnd()
 	} else {
-		if status&(rtm.TxAbortRetry|rtm.TxAbortConflict) != 0 {
+		// if status&(rtm.TxAbortRetry|rtm.TxAbortConflict) != 0 {
+		// 	// safetyfast.Pause()
+		// 	goto retry
+		// }
+
+		if status&(rtm.TxAbortRetry /*|rtm.TxAbortConflict*/) != 0 {
 			// safetyfast.Pause()
 			goto retry
 		}
-		if status&rtm.TxAbortCapacity != 0 {
-			atomic.AddUint64(&r.capacityaborts, 1)
-		}
+		// if status&rtm.TxAbortCapacity != 0 {
+		// 	atomic.AddUint64(&r.capacityaborts, 1)
+		// }
 		// r.fallback = 1
 		r.lock.Lock()
 		atomic.SwapInt32(&r.fallback, 1)
