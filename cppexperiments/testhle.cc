@@ -24,7 +24,7 @@ using namespace std::chrono;
 
 // #define DEFAULT_LOOP_ATTEMPTS 10000
 #define DEFAULT_LOOP_ATTEMPTS 4000000
-#define DEFAULT_NUM_THREADS   8
+#define DEFAULT_NUM_THREADS   6
 #define DEFAULT_ROUNDS        10
 
 // Referencing any of the children types using base class is slower than the direct type
@@ -37,6 +37,7 @@ public:
 };
 
 class NoMutex : public CustomMutex {
+public:
 	string gettype() {
 		return "NoMutex";
 	}
@@ -104,35 +105,35 @@ public:
 	}
 };
 
+template <class CustomMutexType>
 class MySet {
-	size_t bins;
+	size_t numbins;
 	int *values;
-	// mutex m;
-	// SystemMutex m;
-	// SpinMutex m;
-	SpinHLEMutex m;
-	// NoMutex m;
-	// MutexType m;
-	// CustomMutex *m;
-	// bool fallback;
+	CustomMutexType m;
 public:
-	MySet(size_t bins) :bins(bins){
-		// locks = new SpinHLEMutex[bins];
-		values = new int[bins];
+
+	// allocate numbins bins which will be randomly touched by threads
+	MySet(size_t numbins) :numbins(numbins){
+		// Enforce CustomMutexType is a descendant of CustomMutex
+		static_assert(std::is_base_of<CustomMutex, CustomMutexType>::value, "Template type is not derived from CustomMutex");
+		values = new int[numbins];
 	}
 	~MySet() {
-		// delete[] locks;
 		delete[] values;
 	}
-	void put(unsigned long long val) {
-		unsigned long long bin = val % bins;
+
+	// increment the value in bin bindex
+	void touch(size_t bindex) {
+		size_t bin = bindex % numbins;
 		m.lock();
 		values[bin]++;
 		m.unlock();
 	}
+
 	size_t len() {
-		return bins;
+		return numbins;
 	}
+
 	string getlocktype() {
 		// return "RTM with SpinHLEMutex fallback";
 		return m.gettype();
@@ -163,19 +164,51 @@ struct result {
 	unsigned          *statuses;
 };
 
-unsigned long long int counter = 0;
 
-#define print_status_flag(tid,loopi,status,flag) \
-			if (status & flag)                   \
-				printf("[Thread %2d] loop %d - %s\n", tid, loopi, #flag)
-
-void thread_func(params *par, result *res, MySet *s) {
+template <class CustomMutexType>
+void thread_func(params *par, result *res, MySet<CustomMutexType> *s) {
 	unsigned long long loops = par->loops;
 	auto vals = &par->vals;
 
 	for (unsigned long long i = 0; i < loops; i++) {
-		s->put((*vals)[i]);
+		s->touch((*vals)[i]);
 	}
+}
+
+template <class CustomMutexType>
+void runtest(int num_threads, int loops, int rounds) {
+	printf("# Spawning %d threads to do %d loops\n", num_threads, loops);
+
+	thread threads[num_threads];
+	params    *par[num_threads];
+	result    *res[num_threads];
+
+	for (int tid = 0; tid < num_threads; tid++) {
+		par[tid] = new params(tid, loops);
+		res[tid] = new result;
+		res[tid]->statuses = new unsigned[par[tid]->loops];
+	}
+
+	long double sum = 0.0;
+	for (int r = 0; r < rounds; r++) {
+		MySet<CustomMutexType> s(100000);
+		auto start = high_resolution_clock::now();
+		for (int tid = 0; tid < num_threads; tid++) {
+			threads[tid] = thread(thread_func<CustomMutexType>, par[tid], res[tid], &s);
+		}
+		for (int tid = 0; tid < num_threads; tid++) {
+			threads[tid].join();
+		}
+		auto stop = high_resolution_clock::now();
+
+		auto dur = duration_cast<duration<long double>>(stop - start).count();
+		sum += dur;
+
+		printf("%.4Lf ms - %ld elements - using %s\n", dur*1000, s.len(), s.getlocktype().c_str());
+	}
+	auto avg_dur = (sum / ((long double)rounds));
+	printf("Average %.4Lf ms over %d rounds\n", avg_dur * 1000.0, rounds);
+	printf("Average %.4Lf us per item\n", (avg_dur / (long double)(num_threads*loops)) * 1000.0 * 1000.0);
 }
 
 int main(int argc, char *argv[]) {
@@ -195,59 +228,13 @@ int main(int argc, char *argv[]) {
 		rounds = atoi(argv[3]);
 	}
 
-	printf("# Spawning %d threads to do %d loops\n", num_threads, loops);
+	runtest<NoMutex>(num_threads, loops, rounds);
+	printf("\n");
+	runtest<SystemMutex>(num_threads, loops, rounds);
+	printf("\n");
+	runtest<SpinMutex>(num_threads, loops, rounds);
+	printf("\n");
+	runtest<SpinHLEMutex>(num_threads, loops, rounds);
 
-	thread threads[num_threads];
-	params    *par[num_threads];
-	result    *res[num_threads];
-
-	for (int tid = 0; tid < num_threads; tid++) {
-		par[tid] = new params(tid, loops);
-		res[tid] = new result;
-		res[tid]->statuses = new unsigned[par[tid]->loops];
-	}
-
-	// const unsigned long long total = num_threads*loops;
-	// unsigned long long success = 0;
-	// unsigned long long failure = 0;
-
-	long double sum = 0.0;
-	for (int r = 0; r < rounds; r++) {
-		// SpinHLEMutex m;
-		// CustomMutex *mp = &m;
-		MySet s(100000);
-		auto start = high_resolution_clock::now();
-		for (int tid = 0; tid < num_threads; tid++) {
-			threads[tid] = thread(thread_func, par[tid], res[tid], &s);
-		}
-		for (int tid = 0; tid < num_threads; tid++) {
-			threads[tid].join();
-		}
-		auto stop = high_resolution_clock::now();
-
-		auto dur = duration_cast<duration<long double>>(stop - start).count();
-		sum += dur;
-
-		printf("%.4Lf ms - %ld elements - using %s\n", dur*1000, s.len(), s.getlocktype().c_str());
-	}
-	auto avg_dur = (sum / ((long double)rounds));
-	printf("Average %.4Lf ms over %d rounds\n", avg_dur * 1000.0, rounds);
-	printf("Average %.4Lf us per item\n", (avg_dur / (long double)(num_threads*loops)) * 1000.0 * 1000.0);
-
-
-	// for (int tid = 0; tid < num_threads; tid++) {
-	// 	success += res[tid]->success;
-	// 	failure += res[tid]->failure;
-	// 	printf("TH%d - Success=%Lu | Failed=%Lu | Total=%Lu | SuccessRate=%Lf%% | FailureRate=%Lf%%\n",
-	// 		tid, res[tid]->success, res[tid]->failure, res[tid]->success+res[tid]->failure,
-	// 		PERCENT(res[tid]->success, loops), PERCENT(res[tid]->failure, loops));
-	// }
-
-	// printf("MASTER - %Ld\n", counter);
-
-	// printf("Total Attempts %Lu | Total Success %Lu | Total Failed %Lu\n", (unsigned long long)(total), success, failure);
-	// printf("Success Rate %Lu / %Lu = %Lf%%\n", success, (unsigned long long)(total), PERCENT(success, total));
-	// printf("Failure Rate %Lu / %Lu = %Lf%%\n", failure, (unsigned long long)(total), PERCENT(failure, total) );
-	// cout << "Set has " << s.len() << " elements" << endl;
 	return 0;
 }
