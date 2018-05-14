@@ -180,7 +180,7 @@ void thread_func(params *par, result *res, MySet<CustomMutexType> *s) {
 }
 
 template <class CustomMutexType>
-void runtest(int num_threads, int loops, int rounds) {
+long double runtest(int num_threads, int loops, int rounds) {
 	printf("# Spawning %d threads to do %d loops\n", num_threads, loops);
 
 	thread threads[num_threads];
@@ -213,6 +213,8 @@ void runtest(int num_threads, int loops, int rounds) {
 	auto avg_dur = (sum / ((long double)rounds));
 	printf("Average %.4Lf ms over %d rounds\n", avg_dur * 1000.0, rounds);
 	printf("Average %.4Lf us per item\n", (avg_dur / (long double)(num_threads*loops)) * 1000.0 * 1000.0);
+
+	return avg_dur;
 }
 
 int main(int argc, char *argv[]) {
