@@ -1,7 +1,12 @@
 /**
- * @brief This program tests the collision rate when using n threads and memory transactions
+ * @brief This program tests Intel HLE primitives against other mutex primitives
+ *        in a high sparsity environment, where transactions should excel.
  *
- * @file testhle2.cc
+ * The idea is that transactional memory should excel when multiple threads are
+ * accessing different memory locations, that do not conflict.
+ *
+ *
+ * @file testhle.cc
  * @author Craig Hesling
  * @date 2018-04-01
  */
@@ -11,7 +16,6 @@
 #include <thread>
 #include <chrono>
 #include <vector>
-// #include <map>
 #include <set>
 #include <mutex>
 #include <immintrin.h>
@@ -122,9 +126,9 @@ public:
 		delete[] values;
 	}
 
-	// increment the value in bin bindex
-	void touch(size_t bindex) {
-		size_t bin = bindex % numbins;
+	// increment the value in bin binindex
+	void touch(size_t binindex) {
+		size_t bin = binindex % numbins;
 		m.lock();
 		values[bin]++;
 		m.unlock();
@@ -213,8 +217,8 @@ void runtest(int num_threads, int loops, int rounds) {
 
 int main(int argc, char *argv[]) {
 	int num_threads = DEFAULT_NUM_THREADS;
-	int loops = DEFAULT_LOOP_ATTEMPTS;
-	int rounds = DEFAULT_ROUNDS;
+	int loops       = DEFAULT_LOOP_ATTEMPTS;
+	int rounds      = DEFAULT_ROUNDS;
 
 	if (argc > 1) {
 		num_threads = atoi(argv[1]);
