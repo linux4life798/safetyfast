@@ -14,6 +14,29 @@ Checkout the [SafetyFast Project Page](http://craighesling.com/project/safetyfas
 
 # Examples
 
+## Checking for HLE and RTM CPU support
+It is necessary to check that the CPU you are using support Intel RTM and/or
+Intel HLE instruction sets, since safetyfast does not check.
+This can be accomplished by using the Intel provided `cpuid` package, as shown
+below.
+
+```go
+import (
+  "github.com/intel-go/cpuid"
+)
+
+func main() {
+	if !cpuid.HasExtendedFeature(cpuid.RTM) {
+		panic("The CPU does not support Intel RTM")
+	}
+
+	if !cpuid.HasExtendedFeature(cpuid.HLE) {
+		panic("The CPU does not support Intel HLE")
+	}
+}
+
+```
+
 ## Using RTM
 
 ```go
