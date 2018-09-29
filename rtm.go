@@ -17,12 +17,16 @@ type RTMContext struct {
 	capacityaborts uint64
 }
 
+// NewRTMContexDefault creates an AtomicContext that tries to use Intel RTM,
+// but can fallback to using the native sync.Mutex.
 func NewRTMContexDefault() *RTMContext {
 	return &RTMContext{
 		lock: new(sync.Mutex),
 	}
 }
 
+// NewRTMContexDefault creates an AtomicContext that tries to use Intel RTM,
+// but can fallback to using the provided sync.Locker.
 func NewRTMContex(l sync.Locker) *RTMContext {
 	return &RTMContext{
 		lock: l,
