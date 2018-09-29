@@ -10,14 +10,36 @@ import (
 // Pause executes the PAUSE x86 instruction
 func Pause()
 
+// Lock1XCHG8 will atomically write 1 to val while returning the old value.
+// The size of val must be 8 bits.
 func Lock1XCHG8(val *int8) (old int8)
+
+// Lock1XCHG32 will atomically write 1 to val while returning the old value.
+// The size of val must be 32 bits.
 func Lock1XCHG32(val *int32) (old int32)
+
+// Lock1XCHG64 will atomically write 1 to val while returning the old value.
+// The size of val must be 64 bits.
 func Lock1XCHG64(val *int64) (old int64)
 
+// SpinLock implements a basic spin lock that waits forever until the lock
+// can be acquired.
+// It assumes the lock has been acquired when it successfully writes a 1 to val,
+// while the original value was 0.
+// This implementation spins on a read only and then uses the XCHG instruction
+// in order to claim the lock. The loop makes use of the PAUSE hint instruction.
 func SpinLock(val *int32)
+
+// SpinCountLock implements a basic spin lock that tries to acquire the lock
+// only attempts times.
+// It assumes the lock has been acquired when it successfully writes a 1 to val,
+// while the original value was 0.
+// This implementation spins on a read only and then uses the XCHG instruction
+// in order to claim the lock. The loop makes use of the PAUSE hint instruction.
 func SpinCountLock(val, attempts *int32)
 
-// returns 0 is lock acquired
+// HLETryLock attempts only once to acquire the lock by writing a 1 to val
+// using HLE primitives. This function returns a 0 if the lock was acquired.
 func HLETryLock(val *int32) int32
 
 // HLESpinLock repeatedly tries to set val to 1 using Intel HLE and XCHG.
@@ -38,6 +60,8 @@ func HLESpinLock(val *int32)
 // Please note that attempts must be greater 0 when called.
 func HLESpinCountLock(val, attempts *int32)
 
+// HLEUnlock writes a 0 to val to indicate the lock has been released
+// using HLE primitives
 func HLEUnlock(val *int32)
 
 // LockAttempts sets how many times the spin loop is willing to try to
