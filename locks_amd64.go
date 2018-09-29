@@ -184,33 +184,3 @@ func (m *SpinHLEMutex) Lock() {
 func (m *SpinHLEMutex) Unlock() {
 	HLEUnlock((*int32)(m))
 }
-
-type RTMMutex struct {
-	val int32
-	// fallback bool
-	// lock     sync.Mutex
-}
-
-func (m *RTMMutex) Lock() {
-	// if status := rtm.TxBegin(); status == rtm.TxBeginStarted {
-	// 	rtm.TxEnd()
-	// } else {
-	// 	if (status & rtm.TxAbortRetry) == 0 {
-	// 		fmt.Println("Said not to retry")
-	// 	}
-
-	// }
-
-	for {
-		for m.val != 0 {
-			Pause()
-		}
-		if atomic.CompareAndSwapInt32(&m.val, 0, 1) {
-			break
-		}
-	}
-}
-
-func (m *RTMMutex) Unlock() {
-	m.val = 0
-}
