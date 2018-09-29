@@ -40,7 +40,8 @@ func HLESpinCountLock(val, attempts *int32)
 
 func HLEUnlock(val *int32)
 
-// const LockAttempts = int32(200) // run for chart
+// LockAttempts sets how many times the spin loop is willing to try to
+// fetching the lock.
 const LockAttempts = int32(200)
 
 // Using Golang's builtin atomics
