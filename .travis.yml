@@ -1,7 +1,8 @@
 sudo: false
 language: go
 go:
-  - "1.9"
+# math/rand.Shuffle didn't exist in 1.9
+#  - "1.9"
   - "1.10"
   - "1.11"
   - tip
