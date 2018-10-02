@@ -14,6 +14,23 @@ go get github.com/linux4life798/safetyfast
 
 Checkout the [SafetyFast Project Page](http://craighesling.com/project/safetyfast).
 
+# Benchmarking
+
+The following plot shows the number of milliseconds it took for 8 goroutines
+to increments 480000 random elements (per goroutine) of an array of ints.
+The x axis denotes how large (and therefore sparse) the array was.
+The synchronization primitive used during the increment is indicated as
+a series/line.
+
+![Performance Graph](benchmarks/output-craigmobileworkstation.svg)
+
+Note that, as the array size increases, the likelihood of two goroutines
+touching the same element at the same instance decreases.
+This is why we see such a dramatic increase in speed, when using either
+the HLE or RTM style synchronization primitive.
+
+The `SystemMutex` is just `sync.Mutex`.
+
 # Examples
 
 ## Checking for HLE and RTM CPU support
