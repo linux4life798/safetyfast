@@ -34,6 +34,36 @@ The `SystemMutex` is just `sync.Mutex`.
 It is also worth observing that the performance started to degrade towards the
 very large array sizes. This is most likely due to a cache size limitation.
 
+# Snippets
+
+## Using RTM
+
+```go
+m := map[string]int{
+    "word1": 0,
+}
+
+c := NewRTMContexDefault()
+c.Atomic(func() {
+    // Action to be done transactionally
+    m["word1"] = m["word1"] + 1
+})
+```
+
+# Using HLE
+
+```go
+m := map[string]int{
+    "word1": 0,
+}
+
+var lock safetyfast.SpinHLEMutex
+lock.Lock()
+// Action to be done transactionally
+m["word1"] = m["word1"] + 1
+lock.Unlock()
+```
+
 # Examples
 
 ## Checking for HLE and RTM CPU support
@@ -62,37 +92,79 @@ func main() {
 ## Using RTM
 
 ```go
-m := map[string]int{
-    "word1": 0,
-    "word2": 0,
-    "word3": 0,
-    "word4": 0,
-}
+package main
 
-c := NewRTMContexDefault()
-c.Atomic(func() {
-    // Action to be done transactionally
-    count := m["word1"]
-    m["word1"] = count + 1
-})
+import (
+    "fmt"
+    "sync"
+    "github.com/linux4life798/safetyfast"
+)
+
+func main() {
+    m := map[string]int{
+        "word1": 0,
+        "word2": 0,
+    }
+
+    c := safetyfast.NewRTMContexDefault()
+    var wg sync.WaitGroup
+
+    wg.Add(2)
+    go c.Atomic(func() {
+        // Action to be done transactionally
+        m["word1"] = m["word1"] + 1
+        wg.Done()
+    })
+    go c.Atomic(func() {
+        // Action to be done transactionally
+        m["word1"] = m["word1"] + 1
+        wg.Done()
+    })
+    wg.Wait()
+
+    fmt.Println("word1 =", m["word1"])
+}
 ```
 
 ## Using HLE
 
 ```go
-m := map[string]int{
-    "word1": 0,
-    "word2": 0,
-    "word3": 0,
-    "word4": 0,
-}
+package main
 
-var lock SpinHLEMutex
-lock.Lock()
-// Action to be done transactionally
-count := m["word1"]
-m["word1"] = count + 1
-lock.Unlock()
+import (
+    "fmt"
+    "sync"
+    "github.com/linux4life798/safetyfast"
+)
+
+func main() {
+    m := map[string]int{
+        "word1": 0,
+        "word2": 0,
+    }
+
+    var lock safetyfast.SpinHLEMutex
+    var wg sync.WaitGroup
+
+    wg.Add(2)
+    go func() {
+        lock.Lock()
+        // Action to be done transactionally
+        m["word1"] = m["word1"] + 1
+        lock.Unlock()
+        wg.Done()
+    }()
+    go func() {
+        lock.Lock()
+        // Action to be done transactionally
+        m["word1"] = m["word1"] + 1
+        lock.Unlock()
+        wg.Done()
+    }()
+    wg.Wait()
+
+    fmt.Println("word1 =", m["word1"])
+}
 ```
 
 [wikipedia-tsx]: https://en.wikipedia.org/wiki/Transactional_Synchronization_Extensions
