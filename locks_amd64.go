@@ -74,30 +74,16 @@ func HLEUnlock(val *int32)
 // fetching the lock.
 const LockAttempts = int32(200)
 
-// SpinLockAtomic
-// Using Golang's builtin atomics
+// SpinLockAtomics implements a very basic spin forever style lock that
+// uses the built in atomics.SwapInt32 function in order to claim the lock.
 func SpinLockAtomics(val *int32) {
-	for {
-		// Spin on simple read
-		for *val != 0 {
-			// ASM hint for spin loop
-			// Pause()
-		}
-		if atomic.SwapInt32(val, 1) == 0 {
-			break
-		}
-	}
-}
-
-// Using similar custom ASM
-func SpinLockASM(val *int32) {
 	for {
 		// Spin on simple read
 		for *val != 0 {
 			// ASM hint for spin loop
 			Pause()
 		}
-		if Lock1XCHG32(val) == 0 {
+		if atomic.SwapInt32(val, 1) == 0 {
 			break
 		}
 	}
@@ -125,12 +111,10 @@ func (m *SpinMutex) Lock() {
 		var attempts int32 = LockAttempts
 		SpinCountLock((*int32)(m), &attempts)
 		if attempts > 0 {
-			// if attempts < LockAttempts {
-			// 	fmt.Println(attempts)
-			// }
+			// We acquired the lock before attempts was exceeded
 			return
 		}
-		// fmt.Println("Gosched")
+		// Invoke scheduler to allow other to run
 		runtime.Gosched()
 	}
 }
@@ -178,13 +162,11 @@ func (m *SpinHLEMutex) Lock() {
 		var attempts int32 = LockAttempts
 		HLESpinCountLock((*int32)(m), &attempts)
 
-		// If
 		if attempts > 0 {
-			// if attempts < LockAttempts {
-			// 	fmt.Println(attempts)
-			// }
+			// We acquired the lock before attempts was exceeded
 			return
 		}
+		// Invoke scheduler to allow other to run
 		runtime.Gosched()
 	}
 }
