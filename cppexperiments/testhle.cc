@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <string>
 #include <thread>
 #include <chrono>
 #include <vector>
@@ -40,6 +41,11 @@ public:
 	virtual ~CustomMutex() {}
 };
 
+
+/**
+ * @brief The anti-mutex that doesn't have any effect.
+ * The methods \a lock and \a unlock simply return immediately.
+ */
 class NoMutex : public CustomMutex {
 public:
 	string gettype() {
@@ -47,6 +53,9 @@ public:
 	}
 };
 
+/**
+ * @brief Simply a proxy for the standard \a std::mutex.
+ */
 class SystemMutex : public CustomMutex {
 	std::mutex m;
 public:
@@ -63,6 +72,9 @@ public:
 	}
 };
 
+/**
+ * @brief A very basic spin mutex implementation.
+ */
 class SpinMutex : public CustomMutex {
 	int val = 0;
 public:
@@ -221,6 +233,15 @@ int main(int argc, char *argv[]) {
 	int num_threads = DEFAULT_NUM_THREADS;
 	int loops       = DEFAULT_LOOP_ATTEMPTS;
 	int rounds      = DEFAULT_ROUNDS;
+
+	// Search for help flags
+	for (int i = 1; i < argc; i++) {
+		string arg(argv[i]);
+		if (arg.compare("-h")==0 || arg.compare("--help")==0) {
+			cout << "Usage: testhle [num_threads] [loops] [rounds]" << endl;
+			exit(0);
+		}
+	}
 
 	if (argc > 1) {
 		num_threads = atoi(argv[1]);
