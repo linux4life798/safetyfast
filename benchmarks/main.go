@@ -64,7 +64,6 @@ func (btc *BinTouchCounter) Resize(numBins int) {
 		oldbins := btc.bins
 		btc.bins = make([]int32, numBins)
 		copy(btc.bins, oldbins)
-		oldbins = nil
 	} else {
 		// resize using slice
 		btc.bins = btc.bins[0:numBins]
