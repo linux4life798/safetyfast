@@ -1,6 +1,7 @@
 package safetyfast
 
 import (
+	"fmt"
 	"math/rand"
 	"runtime"
 	"sync"
@@ -16,7 +17,11 @@ func TestRTMContext(t *testing.T) {
 	const numIterations = 5000000
 
 	if !cpuid.HasExtendedFeature(cpuid.RTM) {
-		t.Fatal("The CPU does not support Intel RTM")
+		// Let's not fail for Travis-CI
+		fmt.Println("The CPU does not support Intel RTM - Skipping RTM Test!")
+		t.Log("The CPU does not support Intel RTM - Skipping RTM Test!")
+		// t.Fatal("The CPU does not support Intel RTM")
+		return
 	}
 
 	oldmaxprocs := runtime.GOMAXPROCS(numConcurGoRoutines)
