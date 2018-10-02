@@ -155,6 +155,7 @@ func GoRoutineRTMNoPause(wg *sync.WaitGroup, values *RandValues, btc *BinTouchCo
 	wg.Done()
 }
 
+// GoRoutineRTMWithLibrary exercises RTMContext
 func GoRoutineRTMWithLibrary(wg *sync.WaitGroup, values *RandValues, btc *BinTouchCounter, r *safetyfast.RTMContext) {
 	vals := values.GetAll()
 	for _, v := range vals {
