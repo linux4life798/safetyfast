@@ -36,33 +36,31 @@ func (r *RTMContext) CapacityAborts() uint64 {
 	return r.capacityaborts
 }
 
+//go:nosplit
 func (r *RTMContext) Atomic(commiter func()) {
 retry:
 	if status := rtm.TxBegin(); status == rtm.TxBeginStarted {
+		// Since the system lock does not have any way to check it's status
 		if r.fallback != 0 {
 			rtm.TxAbort()
 		}
 		commiter()
 		rtm.TxEnd()
 	} else {
-		// if status&(rtm.TxAbortRetry|rtm.TxAbortConflict) != 0 {
-		// 	// safetyfast.Pause()
-		// 	goto retry
-		// }
-
 		if status&(rtm.TxAbortRetry /*|rtm.TxAbortConflict*/) != 0 {
 			// safetyfast.Pause()
 			goto retry
 		}
-		// if status&rtm.TxAbortCapacity != 0 {
-		// 	atomic.AddUint64(&r.capacityaborts, 1)
-		// }
-		// r.fallback = 1
+		// The following lines should be commented out to achieve top performance.
+		if status&rtm.TxAbortCapacity != 0 {
+			atomic.AddUint64(&r.capacityaborts, 1)
+		}
+
 		r.lock.Lock()
-		atomic.SwapInt32(&r.fallback, 1)
+		SetAndFence32(&r.fallback)
 		commiter()
 		r.fallback = 0
 		r.lock.Unlock()
-		// r.fallback = 0
+
 	}
 }
