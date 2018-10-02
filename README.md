@@ -31,6 +31,9 @@ the HLE or RTM style synchronization primitive.
 
 The `SystemMutex` is just `sync.Mutex`.
 
+It is also worth observing that the performance started to degrade towards the
+very large array sizes. This is most likely due to a cache size limitation.
+
 # Examples
 
 ## Checking for HLE and RTM CPU support
