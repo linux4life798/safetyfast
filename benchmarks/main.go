@@ -21,7 +21,7 @@ type testlock struct {
 	m    sync.Locker
 }
 
-var syncprimatives = map[string]testlock{
+var syncprimitives = map[string]testlock{
 	"systemmutex": {
 		name: "SystemMutex",
 		m:    new(sync.Mutex),
@@ -208,17 +208,17 @@ func main() {
 
 	var testlocks []testlock = make([]testlock, 0)
 
-	for _, primative := range strings.Split(strings.ToLower(FlagLockType), ",") {
-		if primative == "all" {
-			for _, p := range syncprimatives {
+	for _, primitive := range strings.Split(strings.ToLower(FlagLockType), ",") {
+		if primitive == "all" {
+			for _, p := range syncprimitives {
 				testlocks = append(testlocks, p)
 			}
 			break
 		}
 
-		p, ok := syncprimatives[primative]
+		p, ok := syncprimitives[primitive]
 		if !ok {
-			fmt.Fprintf(os.Stderr, "LockType \"%s\" invalid\n", primative)
+			fmt.Fprintf(os.Stderr, "LockType \"%s\" invalid\n", primitive)
 			os.Exit(1)
 		}
 		testlocks = append(testlocks, p)
