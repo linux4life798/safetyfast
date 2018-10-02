@@ -169,6 +169,7 @@ func (m *SpinMutexASM) Unlock() {
 	*m = 0
 }
 
+// SpinHLEMutex is sync.Mutex replacement that uses HLE
 type SpinHLEMutex int32
 
 func (m *SpinHLEMutex) Lock() {
