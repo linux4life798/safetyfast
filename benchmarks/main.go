@@ -38,11 +38,11 @@ var syncprimitives = map[string]testlock{
 		name: "SpinRTMWithPause",
 		m:    new(sync.Mutex),
 	},
-	"spinrtm2": {
+	"spinrtmnopause": {
 		name: "SpinRTMNoPause",
 		m:    new(sync.Mutex),
 	},
-	"spinrtm3": {
+	"spinrtmwithlibrary": {
 		name: "SpinRTMWithLibrary",
 		m:    new(sync.Mutex),
 	},
@@ -175,7 +175,7 @@ var FlagNumBinEnd int64
 var FlagPlotFileName string
 
 func init() {
-	flag.StringVar(&FlagLockType, "lock", "all", "SystemMutex | SpinMutex | SpinHLEMutex | SpinRTM | all")
+	flag.StringVar(&FlagLockType, "lock", "all", "SystemMutex | SpinMutex | SpinHLEMutex | SpinRTM | SpinRTMNoPause | SpinRTMWithLibrary | all")
 	flag.BoolVar(&FlagCSV, "csv", false, "Indicates if the output should be CSV format")
 	flag.Int64Var(&FlagNumBinStart, "binsstart", 1, "")
 	flag.Int64Var(&FlagNumBinEnd, "binsend", 1000000000, "")
