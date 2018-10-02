@@ -1,5 +1,5 @@
 BIN = ./benchmarks
-#PARAMS += -lock systemmutex,spinhlemutex,spinrtmnopause,spinrtmwithlibrary
+PARAMS += -lock systemmutex,spinhlemutex,spinrtmnopause,spinrtmwithlibrary
 
 HOSTNAME = $(shell hostname|tr '.' '\n'|head -n1)
 OUTPUT = output-$(HOSTNAME).svg
