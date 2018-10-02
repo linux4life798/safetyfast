@@ -7,8 +7,14 @@ import (
 	"sync/atomic"
 )
 
-// Pause executes the PAUSE x86 instruction
+// Pause executes the PAUSE x86 instruction.
 func Pause()
+
+// Mfence executes the MFENCE x86 instruction.
+func Mfence()
+
+// SetAndFence32 writes a 1 to val and asserts an MFENCE.
+func SetAndFence32(val *int32)
 
 // Lock1XCHG8 will atomically write 1 to val while returning the old value.
 // The size of val must be 8 bits.
@@ -68,6 +74,7 @@ func HLEUnlock(val *int32)
 // fetching the lock.
 const LockAttempts = int32(200)
 
+// SpinLockAtomic
 // Using Golang's builtin atomics
 func SpinLockAtomics(val *int32) {
 	for {

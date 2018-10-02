@@ -3,8 +3,23 @@
 
 #include "textflag.h"
 
+// func Pause()
 TEXT ·Pause(SB),NOPTR|NOSPLIT,$0-0
     PAUSE
+    RET
+
+// func Mfence()
+TEXT ·Mfence(SB),NOPTR|NOSPLIT,$0-0
+    MFENCE
+    RET
+
+// SetAndFence32 writes a 1 to val and asserts an MFENCE.
+// func SetAndFence32(val *int32)
+TEXT ·SetAndFence32(SB),NOPTR|NOSPLIT,$0
+    MOVQ val+0(FP), CX
+    MOVL $1, AX
+    MOVL AX, (CX)
+    MFENCE
     RET
 
 // Atomically write 1 to val while returning the old value.
