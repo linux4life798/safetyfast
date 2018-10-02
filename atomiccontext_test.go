@@ -11,94 +11,75 @@ import (
 	"github.com/intel-go/cpuid"
 )
 
-func TestLockedContextMutex(t *testing.T) {
-	const numConcurGoRoutines = 8
-	const arrayLength = 100
-	const numIterations = 5000000
+func TestLockedContext(t *testing.T) {
+	run := func(t *testing.T, lock sync.Locker) {
+		const numConcurGoRoutines = 8
+		const arrayLength = 100
+		const numIterations = 5000000
 
-	oldmaxprocs := runtime.GOMAXPROCS(numConcurGoRoutines)
+		oldmaxprocs := runtime.GOMAXPROCS(numConcurGoRoutines)
 
-	var wg sync.WaitGroup
-	var arr = make([]int, arrayLength)
-	var c = NewLockedContext(new(sync.Mutex))
+		var wg sync.WaitGroup
+		var arr = make([]int, arrayLength)
+		var c = NewLockedContext(lock)
 
-	routine := func() {
-		randsrc := rand.NewSource(int64(time.Now().Second()))
-		r := rand.New(randsrc)
+		routine := func() {
+			randsrc := rand.NewSource(int64(time.Now().Second()))
+			r := rand.New(randsrc)
 
-		for i := 0; i < numIterations; i++ {
-			index := r.Int() % len(arr)
-			c.Atomic(func() {
-				arr[index]++
-			})
+			for i := 0; i < numIterations; i++ {
+				index := r.Int() % len(arr)
+				c.Atomic(func() {
+					arr[index]++
+				})
+			}
+			wg.Done()
 		}
-		wg.Done()
-	}
 
-	wg.Add(numConcurGoRoutines)
-	for i := 0; i < numConcurGoRoutines; i++ {
-		go routine()
-	}
-	wg.Wait()
-
-	var sum int
-	for _, v := range arr {
-		sum += v
-	}
-
-	expected := numIterations * numConcurGoRoutines
-	t.Logf("Array Length=%d | NumberGoRoutines=%d | NumIterations=%d", len(arr), numConcurGoRoutines, numIterations)
-	t.Logf("ArraySum=%d | Expected=%d", sum, expected)
-	if sum != expected {
-		t.Fatalf("Sum result is %d, but we expected %d", sum, expected)
-	}
-
-	runtime.GOMAXPROCS(oldmaxprocs)
-}
-
-func TestLockedContextHLE(t *testing.T) {
-	const numConcurGoRoutines = 8
-	const arrayLength = 100
-	const numIterations = 5000000
-
-	oldmaxprocs := runtime.GOMAXPROCS(numConcurGoRoutines)
-
-	var wg sync.WaitGroup
-	var arr = make([]int, arrayLength)
-	var c = NewLockedContext(new(SpinHLEMutex))
-
-	routine := func() {
-		randsrc := rand.NewSource(int64(time.Now().Second()))
-		r := rand.New(randsrc)
-
-		for i := 0; i < numIterations; i++ {
-			index := r.Int() % len(arr)
-			c.Atomic(func() {
-				arr[index]++
-			})
+		wg.Add(numConcurGoRoutines)
+		for i := 0; i < numConcurGoRoutines; i++ {
+			go routine()
 		}
-		wg.Done()
+		wg.Wait()
+
+		var sum int
+		for _, v := range arr {
+			sum += v
+		}
+
+		expected := numIterations * numConcurGoRoutines
+		t.Logf("Array Length=%d | NumberGoRoutines=%d | NumIterations=%d", len(arr), numConcurGoRoutines, numIterations)
+		t.Logf("ArraySum=%d | Expected=%d", sum, expected)
+		if sum != expected {
+			t.Fatalf("Sum result is %d, but we expected %d", sum, expected)
+		}
+
+		runtime.GOMAXPROCS(oldmaxprocs)
 	}
 
-	wg.Add(numConcurGoRoutines)
-	for i := 0; i < numConcurGoRoutines; i++ {
-		go routine()
-	}
-	wg.Wait()
+	t.Run("SpinHLEMutex", func(t *testing.T) {
+		run(t, new(SpinHLEMutex))
+	})
 
-	var sum int
-	for _, v := range arr {
-		sum += v
-	}
+	t.Run("sync.Mutex", func(t *testing.T) {
+		run(t, new(sync.Mutex))
+	})
 
-	expected := numIterations * numConcurGoRoutines
-	t.Logf("Array Length=%d | NumberGoRoutines=%d | NumIterations=%d", len(arr), numConcurGoRoutines, numIterations)
-	t.Logf("ArraySum=%d | Expected=%d", sum, expected)
-	if sum != expected {
-		t.Fatalf("Sum result is %d, but we expected %d", sum, expected)
-	}
+	t.Run("SystemMutex", func(t *testing.T) {
+		run(t, new(SystemMutex))
+	})
 
-	runtime.GOMAXPROCS(oldmaxprocs)
+	t.Run("SpinMutex", func(t *testing.T) {
+		run(t, new(SpinMutex))
+	})
+
+	t.Run("SpinMutexASM", func(t *testing.T) {
+		run(t, new(SpinMutexASM))
+	})
+
+	t.Run("SpinMutexBasic", func(t *testing.T) {
+		run(t, new(SpinMutexBasic))
+	})
 }
 
 func TestRTMContext(t *testing.T) {
@@ -171,5 +152,17 @@ func TestRTMContext(t *testing.T) {
 
 	t.Run("SystemMutex", func(t *testing.T) {
 		run(t, new(SystemMutex))
+	})
+
+	t.Run("SpinMutex", func(t *testing.T) {
+		run(t, new(SpinMutex))
+	})
+
+	t.Run("SpinMutexASM", func(t *testing.T) {
+		run(t, new(SpinMutexASM))
+	})
+
+	t.Run("SpinMutexBasic", func(t *testing.T) {
+		run(t, new(SpinMutexBasic))
 	})
 }
