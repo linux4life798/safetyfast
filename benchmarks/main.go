@@ -147,6 +147,7 @@ func GoRoutineRTMNoPause(wg *sync.WaitGroup, values *RandValues, btc *BinTouchCo
 			}
 			m.Lock()
 			*fallback = true
+			safetyfast.Mfence()
 			btc.Touch(index)
 			*fallback = false
 			m.Unlock()
