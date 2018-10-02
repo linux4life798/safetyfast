@@ -13,3 +13,6 @@ env:
 # Should add test builds on other platforms to check fallback plan
 #  - GOOS=linux GOARCH=arm
 #  - GOOS=linux GOARCH=mips
+# Show which instruction extensions are supported
+before_script:
+  - cat /proc/cpuinfo|grep flags|uniq
