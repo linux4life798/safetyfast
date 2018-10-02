@@ -25,17 +25,23 @@ func NewRTMContexDefault() *RTMContext {
 	}
 }
 
-// NewRTMContexDefault creates an AtomicContext that tries to use Intel RTM,
+// NewRTMContex creates an AtomicContext that tries to use Intel RTM,
 // but can fallback to using the provided sync.Locker.
 func NewRTMContex(l sync.Locker) *RTMContext {
 	return &RTMContext{
 		lock: l,
 	}
 }
+
+// CapacityAborts returns the number of aborts that were due to cache capacity.
+// If you see lots of capacity aborts, this means the commiter function
+// if touching too many memory locations and is unlikely to be reaping any gains
+// from using an RTMContext.
 func (r *RTMContext) CapacityAborts() uint64 {
 	return r.capacityaborts
 }
 
+// Atomic executes the commiter in an atomic fasion.
 //go:nosplit
 func (r *RTMContext) Atomic(commiter func()) {
 retry:
