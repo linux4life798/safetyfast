@@ -1,4 +1,4 @@
-// This is a contrived benchmark that caters to transaction memory primitives.
+// This is a contrived benchmark that caters to transactional memory primitives.
 package main
 
 import (
