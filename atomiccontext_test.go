@@ -65,10 +65,6 @@ func TestLockedContext(t *testing.T) {
 		run(t, new(sync.Mutex))
 	})
 
-	t.Run("SystemMutex", func(t *testing.T) {
-		run(t, new(SystemMutex))
-	})
-
 	t.Run("SpinMutex", func(t *testing.T) {
 		run(t, new(SpinMutex))
 	})
@@ -148,10 +144,6 @@ func TestRTMContext(t *testing.T) {
 
 	t.Run("sync.Mutex", func(t *testing.T) {
 		run(t, new(sync.Mutex))
-	})
-
-	t.Run("SystemMutex", func(t *testing.T) {
-		run(t, new(SystemMutex))
 	})
 
 	t.Run("SpinMutex", func(t *testing.T) {
