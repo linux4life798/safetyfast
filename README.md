@@ -66,6 +66,7 @@ lock.Unlock()
 
 # Check if your CPU supports Intel TSX
 
+## Use the `doihavetsx` utility
 ```bash
 go get github.com/linux4life798/safetyfast/doihavetsx
 doihavetsx
@@ -78,7 +79,18 @@ RTM:        Yes
 HLE:        Yes
 ```
 
-# Examples
+## Common CPUs and Machines
+
+| CPU Name                                   | CPU Codename / Generation | TSX Supported | Machine Description |
+| ------------------------------------------ | ------------------------- | ------------- | ------------------- |
+| Intel(R) Xeon(R) CPU E3-1505M v5 @ 2.80GHz | Skylake/6th               | **Yes**       | Dell Precision 5510 |
+| Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz  | Ivy Bridge/3rd            | No            | MacBook Pro Retina mid 2012 |
+| Intel(R) Core(TM) i7-7820HQ CPU @ 2.90GHz  | Kaby Lake/7th             | **Yes**       | MacBook Pro "Core i7" 2.9 15" Touch/Mid-2017 |
+| Intel(R) Core(TM) i7-4650U CPU @ 1.70GHz   | Haswell/4th               | No (Yes-before microcode install) | MacBook Air (13-inch, Early 2014) |
+
+Please add your machine to this table! Pull-request or issues welcome.
+
+# Code Examples
 
 ## Checking for HLE and RTM support in code
 It is necessary to check that the CPU you are using support Intel RTM and/or
