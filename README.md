@@ -91,7 +91,7 @@ HLE:        Yes
 | Intel(R) Core(TM) i7-7820HQ CPU @ 2.90GHz  | Kaby Lake/7th             | **Yes**       | MacBook Pro "Core i7" 2.9 15" Touch/Mid-2017 |
 | Intel(R) Core(TM) i7-4650U CPU @ 1.70GHz   | Haswell/4th               | No (Yes-before microcode install) | MacBook Air (13-inch, Early 2014) |
 | Intel(R) Core(TM) i7-7Y75 CPU @ 1.30GHz    | Kaby Lake/7th             | **Yes**       | MacBook (Retina, 12-inch, 2017) |
-| Intel(R) Core(TM) i7-4980HQ CPU @ 2.80GHz  | Crystal Well/4th | No | MacBook Pro (Retina, 15-inch, Mid 2015) |
+| Intel(R) Core(TM) i7-4980HQ CPU @ 2.80GHz  | Haswell/4th | No | MacBook Pro (Retina, 15-inch, Mid 2015) |
 | Intel(R) Core(TM) i7-7920HQ CPU @ 3.10GHz | Kaby Lake/7th | **Yes** | MacBook Pro (15-inch, 2017) |
 
 Please add your machine to this table! Pull-request or issues welcome.
