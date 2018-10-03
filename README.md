@@ -64,6 +64,20 @@ m["word1"] = m["word1"] + 1
 lock.Unlock()
 ```
 
+# Check if your CPU supports Intel TSX
+
+```bash
+go get github.com/linux4life798/safetyfast/doihavetsx
+doihavetsx
+```
+
+The output should look something like:
+```
+CPU Brand:  Intel(R) Core(TM) i7-7820HQ CPU @ 2.90GHz
+RTM:        Yes
+HLE:        Yes
+```
+
 # Examples
 
 ## Checking for HLE and RTM CPU support
