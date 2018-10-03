@@ -50,7 +50,7 @@ c.Atomic(func() {
 })
 ```
 
-# Using HLE
+## Using HLE
 
 ```go
 m := map[string]int{
@@ -63,6 +63,9 @@ lock.Lock()
 m["word1"] = m["word1"] + 1
 lock.Unlock()
 ```
+
+---
+---
 
 # Check if your CPU supports Intel TSX
 
@@ -89,6 +92,9 @@ HLE:        Yes
 | Intel(R) Core(TM) i7-4650U CPU @ 1.70GHz   | Haswell/4th               | No (Yes-before microcode install) | MacBook Air (13-inch, Early 2014) |
 
 Please add your machine to this table! Pull-request or issues welcome.
+
+---
+---
 
 # Code Examples
 
