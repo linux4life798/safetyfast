@@ -80,7 +80,7 @@ HLE:        Yes
 
 # Examples
 
-## Checking for HLE and RTM CPU support
+## Checking for HLE and RTM support in code
 It is necessary to check that the CPU you are using support Intel RTM and/or
 Intel HLE instruction sets, since safetyfast does not check.
 This can be accomplished by using the Intel provided `cpuid` package, as shown
