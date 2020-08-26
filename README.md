@@ -87,6 +87,7 @@ HLE:        Yes
 | CPU Name                                   | CPU Codename / Generation | TSX Supported | Machine Description |
 | ------------------------------------------ | ------------------------- | ------------- | ------------------- |
 | Intel(R) Xeon(R) CPU E3-1505M v5 @ 2.80GHz | Skylake/6th               | **Yes**       | Dell Precision 5510 |
+| Intel(R) Xeon(R) Gold 6136 CPU @ 3.00GHz | Skylake/6th               | **Yes**       | Dell Precision 7920 |
 | Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz  | Ivy Bridge/3rd            | No            | MacBook Pro (Retina, Mid 2012) |
 | Intel(R) Core(TM) i7-7820HQ CPU @ 2.90GHz  | Kaby Lake/7th             | **Yes**       | MacBook Pro "Core i7" 2.9 15" Touch/Mid-2017 |
 | Intel(R) Core(TM) i7-4650U CPU @ 1.70GHz   | Haswell/4th               | No (Yes-before microcode install) | MacBook Air (13-inch, Early 2014) |
